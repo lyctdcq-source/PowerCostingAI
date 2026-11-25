@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>物资智能评审流程图</title>
+<style>
+/* 物资智能评审流程图：由“帮助 → 使用帮助”打开，本机静态页，不访问外网。
+   版式：单栏阅读，两张横向流程图各自可横向滚动；颜色只编码“本机规则 / 在线模型 / 人工操作”三类 */
+:root {
+  --bg: #f5f7f6;
+  --surface: #ffffff;
+  --fg: #1c2421;
+  --muted: #5b6762;
+  --line: #c7d0cb;
+  --local: #2c6a53;
+  --local-tint: #e2efe8;
+  --model: #a8620f;
+  --model-tint: #fbecd8;
+  --font-body: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  --font-mono: Consolas, "Courier New", monospace;
+}
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); line-height: 1.7; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 48px;
+  display: grid; gap: 36px; }
+header { display: grid; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; color: var(--muted); }
+h1 { margin: 0; font-size: 30px; font-weight: 700; text-wrap: balance; }
+h2 { margin: 0; font-size: 19px; font-weight: 700; text-wrap: balance; }
+p { margin: 0; max-width: 68ch; font-size: 15px; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px 20px; font-size: 13px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.sw { width: 22px; height: 14px; border-radius: 3px; border: 1.5px solid; display: inline-block; }
+.sw.local { background: var(--local-tint); border-color: var(--local); }
+.sw.model { background: var(--model-tint); border-color: var(--model); }
+.sw.human { background: var(--surface); border: 1.5px dashed var(--muted); }
+.sw.store { background: var(--surface); border-color: var(--line); }
+section { display: grid; gap: 14px; }
+figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.scroll { overflow-x: auto; }
+figure svg { display: block; width: 100%; min-width: 960px; height: auto; font-family: var(--font-body); }
+figcaption { font-size: 13.5px; color: var(--muted); max-width: 90ch; }
+ul.notes { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 80ch; font-size: 14.5px; }
+ul.notes b { font-weight: 600; }
+code { font-family: var(--font-mono); font-size: .9em; }
+
+/* SVG 元素 */
+.box-local { fill: var(--local-tint); stroke: var(--local); stroke-width: 1.4; }
+.box-model { fill: var(--model-tint); stroke: var(--model); stroke-width: 1.4; }
+.box-human { fill: var(--surface); stroke: var(--muted); stroke-width: 1.3; stroke-dasharray: 5 4; }
+.box-store { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; }
+.frame { fill: none; stroke: var(--line); stroke-width: 1.2; }
+.chip { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.t { fill: var(--fg); font-size: 13.5px; font-weight: 700; }
+.s { fill: var(--muted); font-size: 11.5px; }
+.m { fill: var(--muted); font-size: 11px; font-family: var(--font-mono); }
+.h { fill: var(--fg); font-size: 14px; font-weight: 700; }
+.hs { fill: var(--muted); font-size: 12px; }
+.lbl { fill: var(--muted); font-size: 11px; }
+.lbl-model { fill: var(--model); font-size: 11px; font-weight: 500; }
+.ct { fill: var(--fg); font-size: 11.5px; }
+.ar { stroke: var(--muted); stroke-width: 1.4; fill: none; }
+.ar-d { stroke: var(--muted); stroke-width: 1.3; fill: none; stroke-dasharray: 5 4; }
+.bus { stroke: var(--model); stroke-width: 2.2; fill: none; }
+.bus-d { stroke: var(--model); stroke-width: 2; fill: none; stroke-dasharray: 5 4; }
+.halo { stroke: var(--surface); stroke-width: 8; fill: none; }
+.div { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; }
+.edge { stroke: var(--fg); stroke-width: 1.4; stroke-dasharray: 7 5; opacity: .55; }
+.mk { fill: var(--muted); }
+.mk-model { fill: var(--model); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">电力造价智能体平台 · 物资智能评审</div>
+    <h1>物资智能评审：架构与工作流</h1>
+    <p>以设计清册为基准，核对估算书中物资的数量与单价。资料清洗和价格比对在本机按规则完成；数量评审把脱敏后的清洗结果交给在线模型配对和评审，模型的每次返回都经程序校验后才写入结果。每一步结束都落检查点，可人工修正后继续。</p>
+    <div class="legend" aria-label="图例">
+      <span><i class="sw local"></i>本机规则代码</span>
+      <span><i class="sw model"></i>调用在线模型</span>
+      <span><i class="sw human"></i>人工操作</span>
+      <span><i class="sw store"></i>数据与资料</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>系统架构</h2>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 1160 612" role="img" aria-label="系统架构：桌面客户端通过本机服务调度四个业务引擎；只有匹配评审、价格待定条目和结果追问经本机脱敏后调用外部在线模型。">
+        <defs>
+          <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+          <marker id="a1m" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-model"/></marker>
+        </defs>
+
+        <!-- 本机 / 外部边界 -->
+        <line x1="955" y1="10" x2="955" y2="604" class="edge"/>
+        <text x="944" y="24" text-anchor="end" class="hs">本机</text>
+        <text x="966" y="24" class="hs">外部网络</text>
+
+        <!-- 客户端 -->
+        <rect x="20" y="36" width="800" height="100" rx="8" class="frame"/>
+        <text x="36" y="58" class="h">桌面客户端 · WebView2 窗口</text>
+        <rect x="36" y="70" width="376" height="54" rx="6" class="box-store"/>
+        <text x="224" y="92" text-anchor="middle" class="t">对话区</text>
+        <text x="224" y="112" text-anchor="middle" class="s">流程步骤条：资料清洗 → 数量评审 → 价格评审</text>
+        <rect x="428" y="70" width="376" height="54" rx="6" class="box-store"/>
+        <text x="616" y="92" text-anchor="middle" class="t">结果面板</text>
+        <text x="616" y="112" text-anchor="middle" class="s">清洗结果 · 数量评审 · 价格评审；筛选、改配、导出</text>
+
+        <line x1="300" y1="136" x2="300" y2="182" class="ar" marker-end="url(#a1)"/>
+        <text x="308" y="164" class="lbl">提交指令与流程步骤</text>
+        <line x1="560" y1="184" x2="560" y2="138" class="ar" marker-end="url(#a1)"/>
+        <text x="568" y="164" class="lbl">轮询状态与结果</text>
+
+        <!-- 本机服务 -->
+        <rect x="20" y="184" width="800" height="100" rx="8" class="frame"/>
+        <text x="36" y="206" class="h">本机服务 <tspan class="m" font-size="12">server.py · 127.0.0.1:8766</tspan></text>
+        <rect x="36" y="218" width="188" height="52" rx="6" class="box-store"/>
+        <text x="130" y="239" text-anchor="middle" class="t">会话与阶段</text>
+        <text x="130" y="258" text-anchor="middle" class="s">清洗 → 配对 → 评审 → 报告</text>
+        <rect x="230" y="218" width="188" height="52" rx="6" class="box-store"/>
+        <text x="324" y="239" text-anchor="middle" class="t">后台任务</text>
+        <text x="324" y="258" text-anchor="middle" class="s">单任务执行，可申请暂停</text>
+        <rect x="424" y="218" width="188" height="52" rx="6" class="box-store"/>
+        <text x="518" y="239" text-anchor="middle" class="t">检查点</text>
+        <text x="518" y="258" text-anchor="middle" class="s">每步落盘，可恢复</text>
+        <rect x="618" y="218" width="188" height="52" rx="6" class="box-store"/>
+        <text x="712" y="239" text-anchor="middle" class="t">同意记录</text>
+        <text x="712" y="258" text-anchor="middle" class="s">时间、数据版本、脱敏摘要</text>
+
+        <!-- 同意记录放行脱敏发送 -->
+        <polyline points="806,244 899,244 899,328" class="ar-d" marker-end="url(#a1)"/>
+        <text x="907" y="300" class="lbl">同意后放行</text>
+
+        <line x1="420" y1="284" x2="420" y2="328" class="ar" marker-end="url(#a1)"/>
+        <text x="428" y="311" class="lbl">按步骤调度</text>
+
+        <!-- 业务引擎 -->
+        <rect x="20" y="330" width="800" height="140" rx="8" class="frame"/>
+        <text x="36" y="352" class="h">业务引擎 · 由流程技能驱动</text>
+        <rect x="36" y="366" width="188" height="86" rx="6" class="box-local"/>
+        <text x="130" y="390" text-anchor="middle" class="t">资料清洗</text>
+        <text x="130" y="410" text-anchor="middle" class="m">folder_cleaning</text>
+        <text x="130" y="432" text-anchor="middle" class="s">本机规则，不调模型</text>
+        <rect x="230" y="366" width="188" height="86" rx="6" class="box-model"/>
+        <text x="324" y="390" text-anchor="middle" class="t">匹配与数量评审</text>
+        <text x="324" y="410" text-anchor="middle" class="m">LLM_service · match_flow</text>
+        <text x="324" y="432" text-anchor="middle" class="s">配对与评审调用模型</text>
+        <rect x="424" y="366" width="188" height="86" rx="6" class="box-local"/>
+        <text x="518" y="390" text-anchor="middle" class="t">价格评审</text>
+        <text x="518" y="410" text-anchor="middle" class="m">price_library</text>
+        <text x="518" y="432" text-anchor="middle" class="s">本机比价，待定条目可送模型</text>
+        <rect x="618" y="366" width="188" height="86" rx="6" class="box-model"/>
+        <text x="712" y="390" text-anchor="middle" class="t">结果追问</text>
+        <text x="712" y="410" text-anchor="middle" class="m">result_qa</text>
+        <text x="712" y="432" text-anchor="middle" class="s">只读证据包，调用模型</text>
+
+        <!-- 资料 → 引擎 -->
+        <line x1="130" y1="520" x2="130" y2="454" class="ar" marker-end="url(#a1)"/>
+        <text x="138" y="508" class="lbl">读取</text>
+        <line x1="290" y1="520" x2="290" y2="454" class="ar" marker-end="url(#a1)"/>
+        <text x="298" y="508" class="lbl">按批检索</text>
+        <line x1="470" y1="520" x2="470" y2="454" class="ar" marker-end="url(#a1)"/>
+        <text x="478" y="508" class="lbl">按期次取价</text>
+        <line x1="780" y1="520" x2="780" y2="472" class="ar" marker-end="url(#a1)"/>
+        <text x="772" y="508" class="lbl" text-anchor="end">加载各步骤代码</text>
+
+        <!-- 模型请求总线（带底色桥接，压在资料箭头之上） -->
+        <polyline points="324,452 324,488 856,488" class="halo"/>
+        <line x1="518" y1="452" x2="518" y2="488" class="halo"/>
+        <line x1="712" y1="452" x2="712" y2="488" class="halo"/>
+        <polyline points="324,452 324,488 854,488" class="bus" marker-end="url(#a1m)"/>
+        <line x1="518" y1="452" x2="518" y2="488" class="bus-d"/>
+        <line x1="712" y1="452" x2="712" y2="488" class="bus"/>
+        <text x="820" y="480" text-anchor="middle" class="lbl-model">模型请求</text>
+
+        <!-- 脱敏网关 -->
+        <rect x="856" y="330" width="86" height="210" rx="6" class="box-local"/>
+        <text x="899" y="358" text-anchor="middle" class="t">本机脱敏</text>
+        <text x="899" y="384" text-anchor="middle" class="s">站名→站点A</text>
+        <text x="899" y="402" text-anchor="middle" class="s">单位→某单位</text>
+        <text x="899" y="420" text-anchor="middle" class="s">去掉文件</text>
+        <text x="899" y="436" text-anchor="middle" class="s">表名、行号</text>
+        <line x1="872" y1="456" x2="926" y2="456" class="div"/>
+        <text x="899" y="478" text-anchor="middle" class="s">返回内容</text>
+        <text x="899" y="494" text-anchor="middle" class="s">还原代号</text>
+
+        <!-- 在线模型 -->
+        <rect x="985" y="372" width="155" height="116" rx="6" class="box-model"/>
+        <text x="1062" y="402" text-anchor="middle" class="t">在线模型</text>
+        <text x="1062" y="424" text-anchor="middle" class="s">DeepSeek 等</text>
+        <text x="1062" y="442" text-anchor="middle" class="s">OpenAI 兼容接口</text>
+        <text x="1062" y="468" text-anchor="middle" class="s">只收到脱敏副本</text>
+        <line x1="942" y1="410" x2="983" y2="410" class="bus" marker-end="url(#a1m)"/>
+        <text x="970" y="402" text-anchor="middle" class="lbl-model">发送</text>
+        <line x1="985" y1="452" x2="944" y2="452" class="bus" marker-end="url(#a1m)"/>
+        <text x="970" y="446" text-anchor="middle" class="lbl-model">返回</text>
+
+        <!-- 资料与库 -->
+        <rect x="36" y="520" width="188" height="76" rx="6" class="box-store"/>
+        <text x="130" y="545" text-anchor="middle" class="t">工程工作空间</text>
+        <text x="130" y="565" text-anchor="middle" class="s">设计清册、估算书 Excel</text>
+        <text x="130" y="583" text-anchor="middle" class="s">只读，不改源文件</text>
+        <rect x="230" y="520" width="188" height="76" rx="6" class="box-store"/>
+        <text x="324" y="545" text-anchor="middle" class="t">电力知识库</text>
+        <text x="324" y="565" text-anchor="middle" class="s">条目附出处，经审核启用</text>
+        <text x="324" y="583" text-anchor="middle" class="s">随配对批次检索</text>
+        <rect x="424" y="520" width="188" height="76" rx="6" class="box-store"/>
+        <text x="518" y="545" text-anchor="middle" class="t">价格库</text>
+        <text x="518" y="565" text-anchor="middle" class="s">信息价按期次分版本</text>
+        <text x="518" y="583" text-anchor="middle" class="s">审核、发布、回滚</text>
+        <rect x="618" y="520" width="188" height="76" rx="6" class="box-store"/>
+        <text x="712" y="545" text-anchor="middle" class="t">流程技能库</text>
+        <text x="712" y="565" text-anchor="middle" class="s">14 个可编辑步骤</text>
+        <text x="712" y="583" text-anchor="middle" class="s">校验并试跑后生效</text>
+      </svg>
+      </div>
+      <figcaption>橙色总线是唯一出本机的路径：匹配评审、价格评审中未比上的条目（虚线，用户另行确认后才发送）和结果追问都必须经过脱敏网关，网关只在“同意记录”放行后发送。资料清洗、价格比对、检查点和报告生成都留在本机。</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>评审工作流</h2>
+    <figure>
+      <div class="scroll">
+      <svg viewBox="0 0 1160 706" role="img" aria-label="评审工作流：资料清洗六步在本机完成；数量评审先脱敏，再经候选配对、规则校验、配对修正、成套对应，随后逐行与组级评审，结果还原后给出七档结论；价格评审对应信息价、换算口径后按偏差率定档，未比上的条目可召回候选交模型判定。">
+        <defs>
+          <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+        </defs>
+
+        <!-- ① 资料清洗 -->
+        <text x="20" y="28" class="h">① 资料清洗</text>
+        <text x="112" y="28" class="hs">本机规则，不调用模型</text>
+        <rect x="20" y="44" width="165" height="64" rx="6" class="box-human"/>
+        <text x="102" y="70" text-anchor="middle" class="t">选择工作空间</text>
+        <text x="102" y="90" text-anchor="middle" class="s">清册与估算书 Excel</text>
+        <rect x="211" y="44" width="165" height="64" rx="6" class="box-local"/>
+        <text x="293" y="70" text-anchor="middle" class="t">选表与列映射</text>
+        <text x="293" y="90" text-anchor="middle" class="s">清册为基准，选造价表</text>
+        <rect x="402" y="44" width="165" height="64" rx="6" class="box-local"/>
+        <text x="484" y="70" text-anchor="middle" class="t">逐行提取</text>
+        <text x="484" y="90" text-anchor="middle" class="s">层级、续行、合并单元格</text>
+        <rect x="593" y="44" width="165" height="64" rx="6" class="box-local"/>
+        <text x="675" y="70" text-anchor="middle" class="t">范围排除与异常</text>
+        <text x="675" y="90" text-anchor="middle" class="s">照明、施工电源、零数量</text>
+        <rect x="784" y="44" width="165" height="64" rx="6" class="box-local"/>
+        <text x="866" y="70" text-anchor="middle" class="t">清洗结果</text>
+        <text x="866" y="90" text-anchor="middle" class="s">保留文件、表名、行号</text>
+        <rect x="975" y="44" width="165" height="64" rx="6" class="box-human"/>
+        <text x="1057" y="70" text-anchor="middle" class="t">人工核对与修正</text>
+        <text x="1057" y="90" text-anchor="middle" class="s">填写依据，下游结果失效</text>
+        <line x1="185" y1="76" x2="209" y2="76" class="ar" marker-end="url(#a2)"/>
+        <line x1="376" y1="76" x2="400" y2="76" class="ar" marker-end="url(#a2)"/>
+        <line x1="567" y1="76" x2="591" y2="76" class="ar" marker-end="url(#a2)"/>
+        <line x1="758" y1="76" x2="782" y2="76" class="ar" marker-end="url(#a2)"/>
+        <line x1="949" y1="76" x2="973" y2="76" class="ar" marker-end="url(#a2)"/>
+
+        <line x1="20" y1="128" x2="940" y2="128" class="div"/>
+        <line x1="1057" y1="108" x2="1057" y2="164" class="ar" marker-end="url(#a2)"/>
+        <text x="1049" y="142" text-anchor="end" class="lbl">确认无敏感信息后</text>
+
+        <!-- ② 数量评审 -->
+        <text x="20" y="150" class="h">② 数量评审</text>
+        <text x="112" y="150" class="hs">脱敏后的清洗结果交在线模型，程序校验每次返回</text>
+        <!-- 2a：右 → 左 -->
+        <rect x="975" y="166" width="165" height="64" rx="6" class="box-human"/>
+        <text x="1057" y="192" text-anchor="middle" class="t">同意发送</text>
+        <text x="1057" y="212" text-anchor="middle" class="s">记录时间与数据版本</text>
+        <rect x="784" y="166" width="165" height="64" rx="6" class="box-local"/>
+        <text x="866" y="192" text-anchor="middle" class="t">本机脱敏</text>
+        <text x="866" y="212" text-anchor="middle" class="s">站名换代号，去掉位置</text>
+        <rect x="593" y="166" width="165" height="64" rx="6" class="box-model"/>
+        <text x="675" y="192" text-anchor="middle" class="t">候选配对</text>
+        <text x="675" y="212" text-anchor="middle" class="s">按批附知识库条目</text>
+        <rect x="402" y="166" width="165" height="64" rx="6" class="box-local"/>
+        <text x="484" y="192" text-anchor="middle" class="t">规则校验</text>
+        <text x="484" y="212" text-anchor="middle" class="s">电压、型号、截面</text>
+        <rect x="211" y="166" width="165" height="64" rx="6" class="box-model"/>
+        <text x="293" y="192" text-anchor="middle" class="t">配对修正</text>
+        <text x="293" y="212" text-anchor="middle" class="s">未配与数量不符重判</text>
+        <rect x="20" y="166" width="165" height="64" rx="6" class="box-model"/>
+        <text x="102" y="192" text-anchor="middle" class="t">成套对应</text>
+        <text x="102" y="212" text-anchor="middle" class="s">多对多、跨层级</text>
+        <line x1="975" y1="198" x2="951" y2="198" class="ar" marker-end="url(#a2)"/>
+        <line x1="784" y1="198" x2="760" y2="198" class="ar" marker-end="url(#a2)"/>
+        <line x1="593" y1="198" x2="569" y2="198" class="ar" marker-end="url(#a2)"/>
+        <line x1="402" y1="198" x2="378" y2="198" class="ar" marker-end="url(#a2)"/>
+        <line x1="211" y1="198" x2="187" y2="198" class="ar" marker-end="url(#a2)"/>
+
+        <line x1="102" y1="230" x2="102" y2="274" class="ar" marker-end="url(#a2)"/>
+        <text x="112" y="257" class="lbl">检查点：候选配对完成（可在此暂停、改配）</text>
+
+        <!-- 2b：左 → 右 -->
+        <rect x="20" y="276" width="165" height="64" rx="6" class="box-local"/>
+        <text x="102" y="302" text-anchor="middle" class="t">逐行规范化</text>
+        <text x="102" y="322" text-anchor="middle" class="s">标记成套项相关行</text>
+        <rect x="211" y="276" width="165" height="64" rx="6" class="box-local"/>
+        <text x="293" y="302" text-anchor="middle" class="t">领域知识定档</text>
+        <text x="293" y="322" text-anchor="middle" class="s">配对行作证据</text>
+        <rect x="402" y="276" width="165" height="64" rx="6" class="box-model"/>
+        <text x="484" y="302" text-anchor="middle" class="t">逐行评审</text>
+        <text x="484" y="322" text-anchor="middle" class="s">结论与原因，校验重试</text>
+        <rect x="593" y="276" width="165" height="64" rx="6" class="box-model"/>
+        <text x="675" y="302" text-anchor="middle" class="t">成套项整体复核</text>
+        <text x="675" y="322" text-anchor="middle" class="s">整组对照清册</text>
+        <rect x="784" y="276" width="165" height="64" rx="6" class="box-model"/>
+        <text x="866" y="302" text-anchor="middle" class="t">核对单元原因</text>
+        <text x="866" y="322" text-anchor="middle" class="s">按组统一说明</text>
+        <rect x="975" y="276" width="165" height="64" rx="6" class="box-local"/>
+        <text x="1057" y="302" text-anchor="middle" class="t">组级定档</text>
+        <text x="1057" y="322" text-anchor="middle" class="s">回填折算算式</text>
+        <line x1="185" y1="308" x2="209" y2="308" class="ar" marker-end="url(#a2)"/>
+        <line x1="376" y1="308" x2="400" y2="308" class="ar" marker-end="url(#a2)"/>
+        <line x1="567" y1="308" x2="591" y2="308" class="ar" marker-end="url(#a2)"/>
+        <line x1="758" y1="308" x2="782" y2="308" class="ar" marker-end="url(#a2)"/>
+        <line x1="949" y1="308" x2="973" y2="308" class="ar" marker-end="url(#a2)"/>
+
+        <line x1="1057" y1="340" x2="1057" y2="384" class="ar" marker-end="url(#a2)"/>
+        <text x="1049" y="367" text-anchor="end" class="lbl">结果回到本机</text>
+
+        <!-- 2c：右 → 左 -->
+        <rect x="975" y="386" width="165" height="64" rx="6" class="box-local"/>
+        <text x="1057" y="412" text-anchor="middle" class="t">代号还原</text>
+        <text x="1057" y="432" text-anchor="middle" class="s">换回站名与单位</text>
+        <rect x="402" y="386" width="547" height="64" rx="6" class="box-store"/>
+        <text x="428" y="408" class="t">七档结论 <tspan class="s" font-weight="400">· 检查点：数量评审完成</tspan></text>
+        <g>
+          <rect x="428" y="418" width="44" height="22" rx="11" class="chip"/><text x="450" y="433" text-anchor="middle" class="ct">一致</text>
+          <rect x="480" y="418" width="64" height="22" rx="11" class="chip"/><text x="512" y="433" text-anchor="middle" class="ct">基本一致</text>
+          <rect x="552" y="418" width="64" height="22" rx="11" class="chip"/><text x="584" y="433" text-anchor="middle" class="ct">部分一致</text>
+          <rect x="624" y="418" width="54" height="22" rx="11" class="chip"/><text x="651" y="433" text-anchor="middle" class="ct">不一致</text>
+          <rect x="686" y="418" width="76" height="22" rx="11" class="chip"/><text x="724" y="433" text-anchor="middle" class="ct">含于成套项</text>
+          <rect x="770" y="418" width="76" height="22" rx="11" class="chip"/><text x="808" y="433" text-anchor="middle" class="ct">不参与核对</text>
+          <rect x="854" y="418" width="76" height="22" rx="11" class="chip"/><text x="892" y="433" text-anchor="middle" class="ct">评审未完成</text>
+        </g>
+        <rect x="211" y="386" width="165" height="64" rx="6" class="box-human"/>
+        <text x="293" y="412" text-anchor="middle" class="t">人工复核</text>
+        <text x="293" y="432" text-anchor="middle" class="s">筛选、改配、追问所选</text>
+        <rect x="20" y="386" width="165" height="64" rx="6" class="box-local"/>
+        <text x="102" y="412" text-anchor="middle" class="t">成果报告</text>
+        <text x="102" y="432" text-anchor="middle" class="s">Word 总结说明</text>
+        <line x1="975" y1="418" x2="951" y2="418" class="ar" marker-end="url(#a2)"/>
+        <line x1="402" y1="418" x2="378" y2="418" class="ar" marker-end="url(#a2)"/>
+        <line x1="211" y1="418" x2="187" y2="418" class="ar" marker-end="url(#a2)"/>
+
+        <!-- 改配回环 -->
+        <polyline points="250,386 250,364 140,364 140,342" class="ar-d" marker-end="url(#a2)"/>
+        <text x="258" y="378" class="lbl">改配后重新校核</text>
+
+        <line x1="20" y1="474" x2="1140" y2="474" class="div"/>
+
+        <!-- ③ 价格评审 -->
+        <text x="20" y="502" class="h">③ 价格评审</text>
+        <text x="112" y="502" class="hs">本机规则比价，待定条目可送模型</text>
+        <line x1="480" y1="450" x2="480" y2="514" class="ar-d" marker-end="url(#a2)"/>
+        <text x="488" y="494" class="lbl">成套结论：组成件不单独比价</text>
+
+        <rect x="20" y="516" width="165" height="64" rx="6" class="box-store"/>
+        <text x="102" y="542" text-anchor="middle" class="t">价格库</text>
+        <text x="102" y="562" text-anchor="middle" class="s">按期次取已发布版本</text>
+        <rect x="211" y="516" width="356" height="64" rx="6" class="box-local"/>
+        <text x="389" y="542" text-anchor="middle" class="t">对应信息价</text>
+        <text x="389" y="562" text-anchor="middle" class="s">名称、型号、单位归一后对应，不猜、不取第一条</text>
+        <rect x="593" y="516" width="165" height="64" rx="6" class="box-local"/>
+        <text x="675" y="542" text-anchor="middle" class="t">口径换算</text>
+        <text x="675" y="562" text-anchor="middle" class="s">税口径、构成系数、单位</text>
+        <rect x="784" y="516" width="356" height="64" rx="6" class="box-local"/>
+        <text x="962" y="542" text-anchor="middle" class="t">偏差率定档</text>
+        <text x="962" y="562" text-anchor="middle" class="s">≤2% 一致 · ≤5% 基本一致 · ≤阈值 偏差 · 超出 显著偏差</text>
+        <line x1="185" y1="548" x2="209" y2="548" class="ar" marker-end="url(#a2)"/>
+        <line x1="567" y1="548" x2="591" y2="548" class="ar" marker-end="url(#a2)"/>
+        <line x1="758" y1="548" x2="782" y2="548" class="ar" marker-end="url(#a2)"/>
+
+        <line x1="293" y1="580" x2="293" y2="624" class="ar" marker-end="url(#a2)"/>
+        <text x="301" y="607" class="lbl">未比上</text>
+
+        <rect x="211" y="626" width="165" height="64" rx="6" class="box-store"/>
+        <text x="293" y="652" text-anchor="middle" class="t">待定条目</text>
+        <text x="293" y="672" text-anchor="middle" class="s">无对应、型号不同、候选多价</text>
+        <rect x="402" y="626" width="165" height="64" rx="6" class="box-local"/>
+        <text x="484" y="652" text-anchor="middle" class="t">召回候选</text>
+        <text x="484" y="672" text-anchor="middle" class="s">词面打分，单位可换算优先</text>
+        <rect x="593" y="626" width="165" height="64" rx="6" class="box-model"/>
+        <text x="675" y="652" text-anchor="middle" class="t">模型判定</text>
+        <text x="675" y="672" text-anchor="middle" class="s">每批 8 条，置信 ≥60 采用</text>
+        <rect x="784" y="626" width="165" height="64" rx="6" class="box-local"/>
+        <text x="866" y="652" text-anchor="middle" class="t">写回参考条目</text>
+        <text x="866" y="672" text-anchor="middle" class="s">只接受候选内编号</text>
+        <rect x="975" y="626" width="165" height="64" rx="6" class="box-human"/>
+        <text x="1057" y="652" text-anchor="middle" class="t">人工指定参考条目</text>
+        <text x="1057" y="672" text-anchor="middle" class="s">口径不可比等需人判断</text>
+        <line x1="376" y1="658" x2="400" y2="658" class="ar" marker-end="url(#a2)"/>
+        <line x1="567" y1="658" x2="591" y2="658" class="ar" marker-end="url(#a2)"/>
+        <line x1="758" y1="658" x2="782" y2="658" class="ar" marker-end="url(#a2)"/>
+        <line x1="866" y1="626" x2="866" y2="582" class="ar" marker-end="url(#a2)"/>
+        <text x="874" y="607" class="lbl">重算</text>
+        <line x1="1057" y1="626" x2="1057" y2="582" class="ar" marker-end="url(#a2)"/>
+        <text x="1065" y="607" class="lbl">重算</text>
+      </svg>
+      </div>
+      <figcaption>流程按蛇形阅读：第一行从左到右，第二行从右到左，依此类推。数量评审在“候选配对完成”和“数量评审完成”两处落检查点；人工改配只让下游的校核失效，不必重新清洗。价格评审在清洗完成后即可执行，未做数量评审时成套组成件可能被单独比价，结论里会注明。显著偏差阈值默认 10%，可在对话中修改。</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>几条约束</h2>
+    <ul class="notes">
+      <li><b>原始资料不出本机。</b>清洗只用规则代码；发给模型的是清洗后的物资文本，站名换成代号，单位名称和联系方式被替换，文件名、表名、行号被去掉。</li>
+      <li><b>模型输出要过程序校验。</b>配对结果必须落在已知序号上；逐行评审的结论与原因校验不通过会重试，仍不通过的标为“评审未完成”交人工；价格判定只接受候选范围内的编号。</li>
+      <li><b>修改会让下游失效。</b>改清洗数据，配对、评审、报告全部作废；改配对，只作废数量校核和报告。每次修改都要填写依据并留下检查点。</li>
+      <li><b>步骤代码可改。</b>清洗、匹配、评审共 14 个流程技能可在“技能开发与管理”中编辑，保存时先做语法与接口检查，再用内置样例跑通整条流程才生效，可回退版本。</li>
+      <li><b>价格口径按供货方式区分。</b>甲供设备按含税市场价比，乙供设备与装置性材料按除税价比；需要统一口径时可在对话中指定。</li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>

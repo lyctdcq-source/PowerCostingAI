@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>登录 · 电力造价智能体平台</title>
+<style>
+:root{--ink:#202e2b;--muted:#83908b;--green:#24745b;--line:#e5e9e5;--back:#f7f8f5;--red:#bc625c}
+*{box-sizing:border-box}
+body{margin:0;min-height:100dvh;display:grid;place-items:center;font:14px/1.6 "Segoe UI","Microsoft YaHei",sans-serif;color:var(--ink);background:var(--back);padding:16px}
+.card{width:min(380px,100%);background:#fff;border:1px solid var(--line);border-radius:14px;padding:34px 32px 28px;box-shadow:0 12px 40px #1d2b2608}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:26px}
+.logo{display:grid;place-items:center;width:44px;height:44px;border-radius:11px;background:var(--green)}
+.logo svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:1.7;stroke-linejoin:round}
+.brand b{display:block;font-size:20px;font-weight:650;line-height:1.2}
+.brand small{display:block;font-size:11px;letter-spacing:1px;color:var(--muted);margin-top:4px}
+h1{font-size:15px;font-weight:600;margin:0 0 16px}
+label{display:block;font-size:12px;color:#5f6d68;margin:14px 0 6px}
+input{width:100%;font:inherit;border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--ink);background:#fff}
+input:focus-visible,button:focus-visible{outline:2px solid #57a187;outline-offset:2px}
+button{width:100%;margin-top:22px;border:0;border-radius:8px;padding:11px;background:var(--green);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+.error{min-height:20px;margin:12px 0 0;font-size:12px;color:var(--red)}
+.note{margin:18px 0 0;font-size:11px;color:var(--muted);text-align:center}
+</style></head>
+<body>
+<main class="card">
+ <div class="brand"><span class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v14H5z M13 3 8 13h5l-2 8 6-11h-5z"/></svg></span><div><b>电力造价</b><small>智能体平台</small></div></div>
+ <h1>用户登录</h1>
+ <form id="loginForm" novalidate>
+  <label for="username">用户名</label><input id="username" autocomplete="username" required autofocus>
+  <label for="password">密码</label><input id="password" type="password" autocomplete="current-password" required>
+  <p class="error" id="error" role="alert"></p>
+  <button id="submit">登录</button>
+ </form>
+ <p class="note">本地工作站 · 账号由平台管理员分配</p>
+</main>
+<script>
+fetch('/api/auth/me').then(r=>{if(r.ok)location.replace('/')}).catch(()=>{});
+document.getElementById('loginForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const button=document.getElementById('submit'),error=document.getElementById('error');
+ const username=document.getElementById('username').value.trim(),password=document.getElementById('password').value;
+ if(!username||!password){error.textContent='请输入用户名和密码';return;}
+ button.disabled=true;button.textContent='正在登录…';error.textContent='';
+ try{
+  const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json','X-Agent-Demo':'1'},body:JSON.stringify({username,password})});
+  const body=await r.json();
+  if(!r.ok)throw Error(body.error||'登录失败');
+  location.replace('/');
+ }catch(err){
+  error.textContent=err.message==='Failed to fetch'?'本地服务未连接，请重新启动工作台':err.message;
+  document.getElementById('password').select();
+ }finally{button.disabled=false;button.textContent='登录';}
+});
+</script>
+</body></html>

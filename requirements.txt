@@ -1,0 +1,13 @@
+openpyxl>=3.1,<4
+xlrd>=2,<3
+requests>=2.32,<3
+python-docx>=1.1,<2
+pypdf>=5,<7
+pypdfium2>=4,<6
+pymupdf>=1.24,<2
+pyyaml>=6
+Pillow>=11,<13
+pywebview>=6.2,<7
+pydantic>=2.10,<3
+langgraph>=1.0,<2
+langgraph-checkpoint-sqlite>=3.0,<4

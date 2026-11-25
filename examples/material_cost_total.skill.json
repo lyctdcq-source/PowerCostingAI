@@ -1,0 +1,33 @@
+{
+  "format": "power-cost-skill/v1",
+  "skill": {
+    "id": "material_cost_total",
+    "name": "物资金额合计（示例）",
+    "description": "逐行计算数量乘单价并合计，返回保留两位小数的总金额；空数组返回0。",
+    "instructions": "读取 data 中的 items 列表，对每项取 quantity 与 price 相乘后累加，结果四舍五入保留两位小数，以 {\"total\": 数值} 返回；items 为空或缺失时返回 {\"total\": 0}。",
+    "code": "def run(data):\n    items = data.get(\"items\", [])\n    total = 0\n    for item in items:\n        total = total + item.get(\"quantity\", 0) * item.get(\"price\", 0)\n    return {\"total\": round(total, 2)}\n",
+    "tests": [
+      {
+        "input": {
+          "items": [
+            {
+              "quantity": 2,
+              "price": 3.5
+            }
+          ]
+        },
+        "expected": {
+          "total": 7
+        }
+      },
+      {
+        "input": {
+          "items": []
+        },
+        "expected": {
+          "total": 0
+        }
+      }
+    ]
+  }
+}

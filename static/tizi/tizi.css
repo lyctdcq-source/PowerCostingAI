@@ -1,0 +1,360 @@
+/* 施工图确定性提资工作台（v0.14.0 视觉与空间精雕版）
+   严格限定在 .tizi-view / .tizi-* 下，零侵入平台其它模块，遵循 .chat-shell 极简专业克制体系。 */
+.chat-shell.tizi-view.panel-open main{grid-template-columns:minmax(320px,28%) 1px minmax(0,1fr)}
+.chat-shell.tizi-view.panel-open.custom-panel main{grid-template-columns:minmax(280px,1fr) 1px min(var(--panel-w),calc(100% - 281px))}
+/* 专注双栏模式：同屏对照原图时一键收起左侧对话，让「表 + 图」独享 100% 宽度（兼容任意视窗宽度） */
+.chat-shell.tizi-view.tizi-focus-wide.panel-open main{grid-template-columns:minmax(0,1fr)!important}
+.chat-shell.tizi-view.tizi-focus-wide.panel-open main > .chat-panel,
+.chat-shell.tizi-view.tizi-focus-wide.panel-open main > .split-handle{display:none!important}
+.chat-shell.tizi-view.panel-open .workspace{display:flex;flex-direction:column;overflow:hidden;padding:12px 18px 10px}
+.chat-shell.tizi-view .workspace-head{margin-bottom:8px;flex-shrink:0}
+.chat-shell.tizi-view .chat{padding-bottom:52px}
+@media(max-width:950px){.chat-shell.tizi-view.panel-open main{grid-template-columns:1fr}}
+
+.tizi-wb{display:flex;flex-direction:column;flex:1;min-height:0}
+.tizi-wb[hidden]{display:none}
+.tizi-tabs{flex-shrink:0;margin-bottom:10px!important;display:flex;align-items:center}
+.tizi-tabs button{display:inline-flex;align-items:center;gap:5px;font-size:13px!important;padding-bottom:8px!important}
+.tizi-tabs .tizi-tab-vision{margin-left:auto;color:#888}
+.tizi-tab-pill{font-size:10.5px;padding:1px 6px;border-radius:999px;background:#eef0ef;color:#525b56;font-weight:500;font-variant-numeric:tabular-nums}
+.tizi-tab-pill.warn{background:#fbf1df;color:#9c6514}
+
+.tizi-pane{flex:1;min-height:0;overflow:auto;padding-right:2px;scrollbar-width:thin;display:flex;flex-direction:column}
+.tizi-pane[hidden]{display:none}
+.tizi-wb #drawingView{flex:1;min-height:0;overflow:auto;scrollbar-width:thin}
+.tizi-wb #drawingView[hidden]{display:none}
+
+/* 顶部目录与运行控制（资料与探查页） */
+.tizi-folder-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tizi-folder-input{flex:1;min-width:240px;font-size:12.5px;padding:8px 11px}
+.tizi-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:10px 0 12px}
+@media(max-width:960px){.tizi-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tizi-metric{background:#fff;border:1px solid #e7e9e8;border-radius:10px;padding:11px 14px;display:flex;flex-direction:column;gap:3px;text-align:left}
+.tizi-metric label{font-size:11.5px;color:#78807b}
+.tizi-metric strong{font-size:21px;font-weight:600;color:#222;line-height:1.2;font-variant-numeric:tabular-nums}
+.tizi-metric strong.good{color:#24745b}
+.tizi-metric strong.warn{color:#b27018}
+.tizi-metric strong.bad{color:#c03d32}
+.tizi-metric small{font-size:11px;color:#88908b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tizi-workflow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding:12px 14px;background:#f8f9fa;border:1px solid #e7e7e7;border-radius:8px}
+.tizi-step{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#888}
+.tizi-step em{font-style:normal;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;border:1px solid #d8dce0;background:#fff;color:#666}
+.tizi-step.done{color:#24745b;font-weight:500}
+.tizi-step.done em{background:#24745b;border-color:#24745b;color:#fff}
+.tizi-step.current{color:#222;font-weight:600}
+.tizi-step.current em{background:#252525;border-color:#252525;color:#fff}
+
+/* 32px 极简指标摘要带（替代臃肿的 4 张大号 KPI 卡片，释放 +100px 表格垂直高度） */
+.tizi-kpi-strip{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;padding:6px 12px;margin-bottom:8px;background:#f7f8f7;border:1px solid #e7eae8;border-radius:8px;font-size:12px;color:#555;flex-shrink:0}
+.tizi-kpi-item{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.tizi-kpi-item b{color:#1f2622;font-weight:600;font-variant-numeric:tabular-nums}
+.tizi-kpi-item b.good{color:#24745b}
+.tizi-kpi-item b.warn{color:#b27018}
+.tizi-kpi-item b.bad{color:#c03d32}
+.tizi-kpi-link{background:none;border:0;padding:2px 6px;border-radius:5px;cursor:pointer;font-size:12px;color:#555;display:inline-flex;align-items:center;gap:5px}
+.tizi-kpi-link:hover{background:#eaefec;color:#1e2622}
+.tizi-kpi-sep{width:1px;height:12px;background:#dce1de;display:inline-block}
+.tizi-kpi-spacer{flex:1}
+
+/* 柔和激活态与分段控制器（严格遵循“一区一主按钮”法则，消除黑底按钮打架） */
+.tizi-seg{display:inline-flex;align-items:center;background:#eff1f0;padding:2px;border-radius:7px;gap:2px}
+.tizi-seg button{border:0!important;background:transparent!important;color:#5a645e!important;font-size:11.5px!important;padding:4px 9px!important;border-radius:5px!important;box-shadow:none!important;white-space:nowrap;cursor:pointer;transition:all .12s}
+.tizi-seg button:hover{color:#1f2622!important}
+.tizi-seg button[aria-pressed="true"]{background:#fff!important;color:#1e2622!important;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)!important}
+.tizi-toggle-btn{border:1px solid #dcdfdd!important;background:#fff!important;color:#444!important;font-size:11.5px!important;padding:4px 8px!important;border-radius:6px!important;white-space:nowrap;transition:all .12s}
+.tizi-toggle-btn:hover{border-color:#a9b8b0!important;background:#f7faf8!important}
+.tizi-toggle-btn[aria-pressed="true"]{background:#eef6f2!important;border-color:#24745b!important;color:#1b5e49!important;font-weight:500}
+.tizi-toolbar .primary{padding:5px 11px!important;font-size:12px!important;border-radius:7px!important;white-space:nowrap}
+
+/* 图例悬浮气泡（省去常驻 42px 图例条） */
+.tizi-legend-wrap{position:relative;display:inline-flex}
+.tizi-legend-pop{display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:270px;padding:10px 12px;background:#fff;border:1px solid #dfe3e1;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.1);font-size:11.5px;color:#444;flex-direction:column;gap:6px}
+.tizi-legend-wrap:hover .tizi-legend-pop,.tizi-legend-wrap:focus-within .tizi-legend-pop{display:flex}
+.tizi-legend-pop div{display:flex;align-items:center;gap:7px}
+.tizi-legend-pop i{width:12px;height:12px;border-radius:3px;display:inline-block;border:1px solid #d5dcd7;flex-shrink:0}
+
+/* 多表主工作区壳体：充满剩余视窗高度 */
+.tizi-wb-shell{display:flex;flex-direction:column;flex:1;min-height:0}
+.tizi-split{display:flex;flex:1;min-height:0;gap:0;overflow:hidden}
+.tizi-split-left{flex:1 1 56%;min-width:260px;display:flex;flex-direction:column;min-height:0}
+.tizi-split-resizer{width:8px;flex:0 0 8px;cursor:col-resize;position:relative;display:flex;align-items:center;justify-content:center}
+.tizi-split-resizer::after{content:'';width:2px;height:36px;border-radius:2px;background:#d6dbd8;transition:background .15s,height .15s}
+.tizi-split-resizer:hover::after,.tizi-split-resizer.dragging::after{background:#24745b;height:60px}
+.tizi-split-right{flex:0 0 var(--tizi-pdf-w,44%);min-width:240px;max-width:65%;display:flex;flex-direction:column;min-height:0}
+@media(max-width:1100px){
+  .tizi-split{flex-direction:column;overflow:auto}
+  .tizi-split-resizer{display:none}
+  .tizi-split-right{flex:none;max-width:100%;min-height:380px;margin-top:8px}
+}
+
+/* 目标表卡片与单行紧凑头部（杜绝标题竖折成三行） */
+.tizi-table-card{display:flex;flex-direction:column;flex:1;min-height:0;margin-bottom:0!important;overflow:hidden}
+.tizi-table-card.match-expanded{padding:14px 18px!important;background:#fafafa}
+.tizi-toolbar{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid #eceeed;background:#fff;flex-wrap:wrap;flex-shrink:0}
+.tizi-toolbar h3{margin:0;font-size:14px;font-weight:600;color:#1d2420;white-space:nowrap;flex-shrink:0;margin-right:2px}
+.tizi-toolbar .tizi-search{width:155px;min-width:110px;padding:4px 9px;font-size:12px;border-radius:7px}
+.tizi-toolbar-actions{display:flex;align-items:center;gap:5px;margin-left:auto;flex-wrap:wrap}
+
+.tizi-table-scroll{flex:1;min-height:180px;overflow:auto;border-bottom:1px solid #ececec;scrollbar-width:thin}
+.tizi-table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;font-size:12.5px}
+.tizi-table th{position:sticky;top:0;z-index:2;background:#f5f6f5;color:#4d5651;font-weight:600;padding:7px 10px;border-bottom:1px solid #e1e5e2;border-right:1px solid #ebeeec;white-space:nowrap}
+.tizi-table td{padding:6px 10px;border-bottom:1px solid #eff1ef;border-right:1px solid #f0f2f0;white-space:nowrap;max-width:230px;overflow:hidden;text-overflow:ellipsis;cursor:cell;color:#26302b;transition:background .1s}
+.tizi-table td.tizi-num{text-align:right;font-variant-numeric:tabular-nums}
+.tizi-table th.tizi-sticky-0,.tizi-table td.tizi-sticky-0{position:sticky;left:0;z-index:1;min-width:44px;width:44px;text-align:center;background:#f8f9f8;color:#7a837e;font-variant-numeric:tabular-nums}
+.tizi-table th.tizi-sticky-1,.tizi-table td.tizi-sticky-1{position:sticky;left:44px;z-index:1;min-width:80px;background:#fcfdfc;font-weight:500}
+.tizi-table thead th.tizi-sticky-0,.tizi-table thead th.tizi-sticky-1{z-index:4;background:#eff2f0}
+
+/* 双层合并表头与默认值列区分 */
+.tizi-table thead tr.tizi-hdr-top th{top:0;z-index:3;background:#eff2f0;text-align:center;font-size:11.5px;padding:5px 10px}
+.tizi-table thead tr.tizi-hdr-sub th{top:28px;z-index:2;background:#f6f7f6;font-size:11.5px;padding:5px 10px}
+.tizi-table th.tizi-th-default{background:repeating-linear-gradient(-45deg,#f3f4f3,#f3f4f3 6px,#e9ecea 6px,#e9ecea 12px)!important;color:#6c7470}
+.tizi-table td.tizi-td-default{opacity:.88}
+
+/* 单元格语义状态色 */
+.tizi-st-extract{background:#f1f9f4}
+.tizi-st-rule{background:#eff5fc}
+.tizi-st-pending{background:#fef6e4;color:#7d4e08!important}
+.tizi-st-conflict{background:#fdecea;color:#a52822!important;box-shadow:inset 0 0 0 1.5px #d94136}
+.tizi-st-manual{background:#eef4ff;box-shadow:inset 0 0 0 1.5px #2e6be6}
+.tizi-st-drawing{background:#e7f7f4;box-shadow:inset 0 0 0 1.5px #148a7a}
+.tizi-st-empty{background:#fafafa;color:#aeb5b0!important}
+.tizi-table td.tizi-selected{outline:2px solid #24745b;outline-offset:-2px;z-index:2;position:relative}
+.tizi-inline-edit{width:100%;min-width:68px;padding:3px 6px!important;font-size:12.5px!important;border:1.5px solid #24745b!important;border-radius:4px!important;background:#fff!important}
+.tizi-unmapped-bar{margin:0;border-radius:0;border-left:0;border-right:0;border-bottom:0;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;padding:6px 12px}
+
+/* 同屏右侧 PDF 聚焦对照面板（消灭大块灰洞） */
+.tizi-split-pdf{display:flex;flex-direction:column;flex:1;min-height:0;border:1px solid #dfe3e0;border-radius:10px;background:#fff;overflow:hidden}
+.tizi-split-pdf-head{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:7px 10px;border-bottom:1px solid #eceeed;background:#f8f9f8;font-size:12px;flex-shrink:0}
+.tizi-split-pdf-head strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1f2622;font-size:12px}
+.tizi-split-pdf-stage{flex:1;min-height:170px;overflow:auto;background:#edf0ef;display:flex;align-items:center;justify-content:center;padding:10px;scrollbar-width:thin}
+.tizi-split-paper{position:relative;display:inline-block;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.1);border-radius:4px;overflow:hidden;width:100%;max-height:100%}
+.tizi-split-paper img{display:block;width:100%;height:auto}
+.tizi-split-pdf-foot{padding:9px 11px;border-top:1px solid #eceeed;background:#fafafa;font-size:12px;display:flex;flex-direction:column;gap:7px;flex-shrink:0}
+.tizi-split-meta-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;padding:6px 9px;background:#fff;border:1px solid #e6eae7;border-radius:6px;font-size:11.5px}
+.tizi-split-meta-row div small{display:block;color:#87918b;font-size:10.5px}
+.tizi-split-meta-row div b{color:#1f2723;font-weight:600;word-break:break-word}
+
+/* 多源证据胶囊（柔和森绿激活态，不再全黑压眼） */
+.tizi-ev-chips{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.tizi-ev-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;font-size:11.5px;border-radius:999px;border:1px solid #d4dcd7;background:#fff;color:#39443e;cursor:pointer;transition:all .12s}
+.tizi-ev-chip:hover{border-color:#24745b;background:#f4faf7}
+.tizi-ev-chip.active{background:#e7f4ee;border-color:#24745b;color:#175943;font-weight:600}
+.tizi-formula-bar{padding:6px 10px;border-radius:6px;background:#f2f6f4;border-left:3px solid #24745b;color:#273830;font-size:11.5px;line-height:1.45;word-break:break-word}
+
+/* 底部紧凑证据条（非同屏模式） */
+.tizi-evidence{padding:10px 14px!important;margin-top:8px!important;margin-bottom:0!important;flex-shrink:0}
+.tizi-ev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px 12px;font-size:12px;margin:6px 0 8px}
+.tizi-ev-grid div small{display:block;color:#8a928d;font-size:11px}
+.tizi-ev-grid div strong{color:#242424;font-weight:500;word-break:break-all}
+.tizi-ev-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+
+/* 工作台底部全宽 9-Sheet 工作簿标签坞（类 Excel 体验，左右滚箭一目了然） */
+.tizi-sheet-dock{display:flex;align-items:center;gap:4px;margin-top:8px;padding:5px 8px;background:#f5f7f6;border:1px solid #e2e6e3;border-radius:9px;flex-shrink:0}
+.tizi-sheet-scroll-btn{width:24px;height:24px;border-radius:6px;border:1px solid #dce1de;background:#fff;color:#555;display:grid;place-items:center;cursor:pointer;flex-shrink:0;font-size:13px;line-height:1;padding:0}
+.tizi-sheet-scroll-btn:hover{border-color:#24745b;color:#24745b}
+.tizi-sheet-bar{display:flex;gap:5px;align-items:center;overflow-x:auto;flex:1;scrollbar-width:none;padding:1px 2px}
+.tizi-sheet-bar::-webkit-scrollbar{display:none}
+.tizi-sheet-tab{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;border:1px solid transparent;background:transparent;color:#4f5954;font-size:12px;white-space:nowrap;cursor:pointer;flex-shrink:0;transition:all .12s}
+.tizi-sheet-tab:hover{background:#eaeFED;color:#1e2622}
+.tizi-sheet-tab.active{background:#fff;border-color:#24745b;color:#195944;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.tizi-sheet-dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+.tizi-sheet-dot.ok{background:#24745b}
+.tizi-sheet-dot.warn{background:#d48c1c}
+.tizi-sheet-dot.bad{background:#c93d33}
+.tizi-sheet-dot.muted{background:#c2c7c4}
+.tizi-sheet-cnt{font-size:10.5px;color:#7b857f;font-variant-numeric:tabular-nums}
+.tizi-sheet-tab.active .tizi-sheet-cnt{color:#24745b}
+
+/* 基本信息分组表单视图（就地行内编辑，告别丑陋 prompt） */
+.tizi-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;padding:12px}
+.tizi-form-group{border:1px solid #e5e9e6;border-radius:10px;padding:10px 12px;background:#fff}
+.tizi-form-group h4{margin:0 0 8px;font-size:12.5px;color:#1f2622;border-bottom:1px solid #eff2f0;padding-bottom:6px;font-weight:600}
+.tizi-form-field{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 8px;border-radius:6px;margin-bottom:4px;cursor:pointer;font-size:12.5px}
+.tizi-form-field:hover{filter:brightness(.97)}
+.tizi-form-field.tizi-selected{outline:1.5px solid #24745b}
+.tizi-form-field label{color:#666;font-size:12px;flex-shrink:0}
+.tizi-form-field strong{color:#1f2622;font-weight:500;text-align:right;word-break:break-word;font-variant-numeric:tabular-nums}
+
+/* 校验、例外与下载 */
+.tizi-delivery-grid{display:grid;grid-template-columns:1fr;gap:14px}
+.tizi-ex-list{max-height:260px;overflow:auto;border-top:1px solid #eee}
+.tizi-ex-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 4px;border-bottom:1px solid #f2f2f2;font-size:12.5px}
+.tizi-ex-row:last-child{border-bottom:0}
+.tizi-ex-row small{color:#7a827d;display:block;font-size:11.5px}
+.tizi-step-btns{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.tizi-art-table{max-height:260px;overflow:auto;margin-top:8px;border:1px solid #ececec;border-radius:8px}
+
+/* 弹窗工作台：字段配对 & 图纸查看框选 */
+dialog.tizi-dialog{width:min(1120px,94vw);max-width:94vw;height:min(86vh,820px);max-height:92vh;padding:20px 22px;overflow:hidden}
+dialog.tizi-dialog[open]{display:flex;flex-direction:column}
+dialog.tizi-drawing-dialog{width:95vw;max-width:1600px;height:93vh;max-height:94vh;padding:16px 20px}
+.tizi-dialog .dialog-head{margin-bottom:10px;flex-shrink:0}
+.tizi-dialog .dialog-head h2{margin:0;font-size:17px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* 字段配对 */
+.tizi-map-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;flex-shrink:0}
+.tizi-map-bar input{width:220px;padding:6px 10px;font-size:12px}
+.tizi-map-cols{display:grid;grid-template-columns:1.15fr 1fr;gap:14px;flex:1;min-height:0}
+@media(max-width:820px){.tizi-map-cols{grid-template-columns:1fr}}
+.tizi-map-col{display:flex;flex-direction:column;min-height:0;border:1px solid #e7e7e7;border-radius:10px;background:#fff;overflow:hidden}
+.tizi-map-col-head{padding:9px 12px;background:#f7f8f7;border-bottom:1px solid #e9ebe9;font-size:12px;font-weight:600;color:#444;display:flex;justify-content:space-between}
+.tizi-map-list{flex:1;overflow:auto;padding:6px}
+.tizi-map-item{width:100%;text-align:left;padding:9px 10px;border:1px solid transparent;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;margin-bottom:4px}
+.tizi-map-item:hover{background:#f5f7f6}
+.tizi-map-item.selected{background:#eef4f1;border-color:#93b6a4}
+.tizi-map-item small{display:block;font-size:11px;color:#828a85}
+.tizi-map-detail{margin-top:10px;padding:12px 14px;border:1px solid #e7e7e7;border-radius:10px;background:#fafafa;flex-shrink:0;font-size:12.5px}
+.tizi-sugg-chip{border:1px solid #b9cdc2;background:#fff;border-radius:6px;padding:4px 9px;font-size:12px;margin-right:6px;margin-top:6px}
+.tizi-sugg-chip.fuzzy{border-style:dashed;border-color:#d4b170}
+
+/* 图纸查看与框选取值 */
+.tizi-draw-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;flex-shrink:0}
+.tizi-draw-bar select{max-width:340px;padding:5px 8px;font-size:12px}
+.tizi-draw-bar input{width:140px;padding:5px 8px;font-size:12px}
+.tizi-draw-stage{flex:1;min-height:0;overflow:auto;position:relative;background:#eaedf0;border:1px solid #dcdfe3;border-radius:10px;user-select:none}
+.tizi-draw-paper{position:relative;display:inline-block;margin:20px;box-shadow:0 4px 20px #0000001c;background:#fff;cursor:crosshair}
+.tizi-draw-paper.panning{cursor:grabbing}
+.tizi-draw-paper img{display:block;max-width:none;pointer-events:none}
+.tizi-draw-sel{position:absolute;border:2px solid #148a7a;background:#148a7a22;pointer-events:none}
+.tizi-draw-hl{position:absolute;border:2.5px solid #d63b3b;background:#d63b3b18;pointer-events:none}
+.tizi-draw-form{margin-top:10px;padding:10px 14px;border:1px solid #e5e7e5;border-radius:10px;background:#fafafa;flex-shrink:0;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;font-size:12.5px}
+.tizi-draw-form input{width:220px;padding:6px 10px;font-size:13px}
+.tizi-draw-text{color:#333;max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ==========================================================================
+   v0.15.0 中间栏流式解析实时卡片（Live Trace Card）
+   对标 Claude Thinking / Deep Research / Linear 极简专业质感
+   ========================================================================== */
+.tizi-stream-host{margin:10px 0 6px;width:100%}
+.tizi-stream-host[hidden]{display:none}
+.tizi-sc-card{background:#fff;border:1px solid #e3e7e5;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(17,33,26,.04);transition:border-color .2s,box-shadow .2s}
+.tizi-sc-card.running{border-color:#b8d7ca;box-shadow:0 4px 18px rgba(36,116,91,.08)}
+.tizi-sc-card.error{border-color:#e9b8b4}
+
+/* 顶栏：呼吸指示灯 + 阶段状态 + 实时等宽计时 */
+.tizi-sc-head{display:flex;align-items:center;gap:8px;padding:10px 12px 8px;background:linear-gradient(180deg,#fafcfb,#fff)}
+.tizi-sc-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;position:relative;display:inline-flex;align-items:center;justify-content:center}
+.tizi-sc-dot.live{background:#24745b;box-shadow:0 0 0 3px rgba(36,116,91,.18);animation:tiziPulse 1.6s ease-in-out infinite}
+.tizi-sc-dot.done{width:16px;height:16px;background:#e6f4ee;color:#1d6b52;font-size:10px;font-weight:700}
+.tizi-sc-dot.err{width:16px;height:16px;background:#fdecea;color:#c03d32;font-size:10px;font-weight:700}
+@keyframes tiziPulse{0%,100%{box-shadow:0 0 0 2px rgba(36,116,91,.2)}50%{box-shadow:0 0 0 6px rgba(36,116,91,.04)}}
+.tizi-sc-title{font-size:12.5px;font-weight:600;color:#1d2521;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tizi-sc-meta{display:inline-flex;align-items:center;gap:6px;flex-shrink:0;font-size:11px;color:#66726c;font-variant-numeric:tabular-nums}
+.tizi-sc-pct{background:#eff4f1;color:#1f6850;padding:1px 6px;border-radius:999px;font-weight:600}
+
+/* 3px 丝滑细进度条 */
+.tizi-sc-prog{height:3px;background:#eef1ef;position:relative;overflow:hidden}
+.tizi-sc-prog-fill{height:100%;background:linear-gradient(90deg,#24745b,#38a17d);transition:width .28s cubic-bezier(.4,0,.2,1);position:relative}
+.tizi-sc-card.running .tizi-sc-prog-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:tiziShimmer 1.4s linear infinite}
+@keyframes tiziShimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+
+/* 完成后折叠触发条（Claude Thinking 风格） */
+.tizi-sc-fold-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;border:0;border-bottom:1px solid #f0f2f1;background:#f8faf9;color:#4a5650;font-size:11.5px;cursor:pointer;text-align:left;transition:background .12s}
+.tizi-sc-fold-btn:hover{background:#eef4f1;color:#1c2520}
+.tizi-sc-fold-btn b{color:#24745b;font-weight:600}
+
+/* 垂直流式时间轴 */
+.tizi-sc-steps{padding:8px 12px 6px;display:flex;flex-direction:column;gap:2px}
+.tizi-sc-steps[hidden]{display:none}
+.tizi-sc-step{position:relative;padding-left:20px;padding-bottom:6px}
+.tizi-sc-step::before{content:'';position:absolute;left:7px;top:17px;bottom:0;width:1.5px;background:#e6eae7}
+.tizi-sc-step:last-child::before{display:none}
+.tizi-sc-step.done::before{background:#cbe3d8}
+.tizi-sc-step-icon{position:absolute;left:0;top:2px;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;font-size:9.5px;font-weight:700;background:#fff;border:1.5px solid #cfd6d2;color:#8a9590}
+.tizi-sc-step.running .tizi-sc-step-icon{border-color:#24745b;color:#24745b;background:#eef8f3;animation:tiziPulse 1.5s ease-in-out infinite}
+.tizi-sc-step.done .tizi-sc-step-icon{border-color:#24745b;background:#24745b;color:#fff}
+.tizi-sc-step.err .tizi-sc-step-icon{border-color:#c93d33;background:#c93d33;color:#fff}
+.tizi-sc-step-row{display:flex;align-items:center;gap:6px;width:100%;border:0;background:transparent;padding:1px 0;text-align:left;cursor:pointer;font-size:12px;color:#5f6b64}
+.tizi-sc-step.running .tizi-sc-step-row{color:#18241e;font-weight:600}
+.tizi-sc-step.done .tizi-sc-step-row{color:#2d3832}
+.tizi-sc-step-name{white-space:nowrap;flex-shrink:0}
+.tizi-sc-step-sum{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#6e7b74;font-weight:400}
+.tizi-sc-step-dur{font-size:10.5px;color:#939e98;font-variant-numeric:tabular-nums;flex-shrink:0}
+.tizi-sc-step-body{margin-top:4px;padding:5px 8px;border-radius:7px;background:#f7f9f8;border:1px solid #ebf0ed;display:flex;flex-direction:column;gap:4px;animation:tiziFadeIn .18s ease}
+@keyframes tiziFadeIn{from{opacity:0;transform:translateY(-2px)}to{opacity:1;transform:none}}
+.tizi-sc-ticker{font-size:11px;color:#5d6963;display:flex;align-items:center;gap:5px;line-height:1.4;word-break:break-word}
+.tizi-sc-ticker::before{content:'›';color:#24745b;font-weight:700}
+
+/* 工程发现气泡（支持点击直跳右侧对应格） */
+.tizi-sc-finding{display:flex;align-items:flex-start;gap:5px;font-size:11px;line-height:1.4;padding:3px 6px;border-radius:5px;background:#fff;border:1px solid #e6ece9;color:#334039}
+.tizi-sc-finding.good{background:#f0faf5;border-color:#c6e6d7;color:#1a5943}
+.tizi-sc-finding.info{background:#f2f6fb;border-color:#d5e2f2;color:#2c4d75}
+.tizi-sc-finding.warn{background:#fef8ea;border-color:#f2d8a7;color:#82530a}
+.tizi-sc-finding.conflict{background:#fef1f0;border-color:#f1bcb8;color:#a52822;font-weight:500}
+.tizi-sc-finding.clickable{cursor:pointer}
+.tizi-sc-finding.clickable:hover{filter:brightness(.96)}
+
+/* 交叉校验 CHK 实时打勾微矩阵（单列清晰完整展示，不截断标题） */
+.tizi-sc-checks{display:grid;grid-template-columns:1fr;gap:4px;margin-top:2px}
+.tizi-sc-chk{display:flex;align-items:center;gap:6px;font-size:11px;padding:4px 7px;border-radius:5px;background:#fff;border:1px solid #e5eae7;color:#334039;overflow:hidden}
+.tizi-sc-chk.ok{border-color:#cce5d8;background:#f2faf6;color:#1b5c46}
+.tizi-sc-chk.warn{border-color:#efd6a6;background:#fef8ea;color:#82530a}
+.tizi-sc-chk.bad{border-color:#f0c3be;background:#fef2f1;color:#a62a23}
+.tizi-sc-chk b{flex-shrink:0;font-variant-numeric:tabular-nums}
+.tizi-sc-chk span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tizi-sc-chk em{font-style:normal;flex-shrink:0;font-size:10px;padding:1px 5px;border-radius:4px;background:rgba(255,255,255,.72);font-variant-numeric:tabular-nums}
+
+/* 3×3 九表实时点亮矩阵 */
+.tizi-sc-matrix-wrap{padding:8px 12px 10px;border-top:1px solid #eff2f0;background:#fcfdfd}
+.tizi-sc-matrix-head{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#738079;margin-bottom:6px}
+.tizi-sc-matrix{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.tizi-sc-tile{display:flex;flex-direction:column;gap:1px;padding:5px 7px;border-radius:7px;border:1px solid #e7ebe9;background:#f6f8f7;color:#808b85;font-size:11px;text-align:left;cursor:default;transition:all .16s}
+.tizi-sc-tile-top{display:flex;align-items:center;gap:4px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tizi-sc-tile-cnt{font-size:10px;color:#8c9691;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tizi-sc-tile.ready{background:#fff;border-color:#d2e4db;color:#223029;cursor:pointer}
+.tizi-sc-tile.ready:hover{border-color:#24745b;background:#f3faf6;transform:translateY(-1px)}
+.tizi-sc-tile.warn{background:#fff;border-color:#ecd7ad;color:#543c12;cursor:pointer}
+.tizi-sc-tile.warn:hover{border-color:#d48c1c;background:#fffbf2;transform:translateY(-1px)}
+.tizi-sc-tile.conflict{background:#fff7f6;border-color:#ebaaa4;color:#8f241d;cursor:pointer}
+.tizi-sc-tile.conflict:hover{border-color:#c93d33;transform:translateY(-1px)}
+.tizi-sc-tile.active{background:#f2faf6;border-color:#24745b;color:#1b5c46;animation:tiziPulse 1.5s ease-in-out infinite}
+
+/* 完成后摘要与一键直达操作栏 */
+.tizi-sc-foot{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px 10px;border-top:1px solid #edf0ee;background:#f8faf9}
+.tizi-sc-act{border:1px solid #d6deda;background:#fff;color:#2a3530;font-size:11.5px;padding:4px 9px;border-radius:7px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .12s;white-space:nowrap}
+.tizi-sc-act:hover{border-color:#24745b;background:#f0f8f4;color:#175742}
+.tizi-sc-act.primary{background:#24745b;border-color:#24745b;color:#fff;font-weight:500}
+.tizi-sc-act.primary:hover{background:#1d604b}
+.tizi-sc-act.conflict{background:#fef1f0;border-color:#e8aaa4;color:#a52822;font-weight:500}
+.tizi-sc-act.conflict:hover{background:#fde3e1;border-color:#c93d33}
+.tizi-sc-act:disabled{opacity:.52;cursor:not-allowed}
+.tizi-sc-jump-bottom{position:sticky;bottom:6px;margin:4px auto 0;display:flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;border:1px solid #b8d7ca;background:#eef8f3;color:#1b5c46;font-size:11px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.tizi-sc-jump-bottom[hidden]{display:none}
+
+/* 中间栏内联审核确认卡片（主流智能体审批流风格） */
+.tizi-sc-card.paused{border-color:#e6c58a;box-shadow:0 4px 18px rgba(180,105,14,.09)}
+.tizi-sc-dot.paused{width:16px;height:16px;background:#fef5e4;color:#b26a0c;font-size:10px;font-weight:700}
+.tizi-sc-hitl{padding:10px 12px 11px;border-top:1px solid #f0e4cd;background:linear-gradient(180deg,#fffdf8,#fff);display:flex;flex-direction:column;gap:8px}
+.tizi-sc-hitl.clear{border-top-color:#d2e7dc;background:linear-gradient(180deg,#f5fbf8,#fff)}
+.tizi-sc-hitl-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tizi-sc-hitl-title{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:#2c2214}
+.tizi-sc-hitl.clear .tizi-sc-hitl-title{color:#185541}
+.tizi-sc-hitl-badges{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:11px}
+.tizi-sc-pill{padding:1px 7px;border-radius:999px;font-weight:600;font-variant-numeric:tabular-nums}
+.tizi-sc-pill.p0{background:#fdecea;color:#a52822}
+.tizi-sc-pill.p1{background:#fef5e4;color:#9d5f0a}
+.tizi-sc-pill.ok{background:#e7f5ee;color:#1a5e47}
+.tizi-sc-pill.muted{background:#f0f2f1;color:#66726c;font-weight:500}
+.tizi-sc-hitl-desc{margin:0;font-size:11.5px;color:#5c6660;line-height:1.45}
+.tizi-sc-hitl-list{display:flex;flex-direction:column;gap:6px;max-height:240px;overflow:auto;scrollbar-width:thin}
+.tizi-sc-hitl-item{padding:8px 10px;border-radius:8px;border:1px solid #ebe6dc;background:#fff;display:flex;flex-direction:column;gap:6px}
+.tizi-sc-hitl-item.p0{border-color:#f0c4bf;background:#fffafa}
+.tizi-sc-hitl-item-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.tizi-sc-hitl-item-info{min-width:0;flex:1;font-size:12px;color:#222c27;line-height:1.4}
+.tizi-sc-hitl-item-info code{background:#f2f4f3;padding:1px 5px;border-radius:4px;font-size:11.5px;color:#1d2521}
+.tizi-sc-hitl-item-info small{display:block;font-size:11px;color:#6f7b75;margin-top:2px}
+.tizi-sc-hitl-item-acts{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.tizi-sc-hitl-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding-top:4px;border-top:1px dashed #ece9e1}
+.tizi-sc-hitl-chk{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:#526059;cursor:pointer;user-select:none}
+.tizi-sc-hitl-cta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-left:auto}
+
+/* 中间栏内联交付成果输出区（审核通过后继续在中间输出） */
+.tizi-sc-delivery{padding:10px 12px 11px;border-top:1px solid #d5e9df;background:linear-gradient(180deg,#f3faf6,#fff);display:flex;flex-direction:column;gap:8px}
+.tizi-sc-delivery-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;color:#175943}
+.tizi-sc-files{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px}
+.tizi-sc-file{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;border:1px solid #d7e6de;background:#fff;text-decoration:none;color:inherit;transition:border-color .14s,background .14s}
+.tizi-sc-file:hover{border-color:#24745b;background:#f4faf7}
+.tizi-sc-file-ext{font-size:10px;font-weight:700;padding:3px 6px;border-radius:5px;background:#e6f4ee;color:#1b6049;flex-shrink:0}
+.tizi-sc-file-info{min-width:0;flex:1}
+.tizi-sc-file-info b{display:block;font-size:11.5px;color:#1e2823;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tizi-sc-file-info small{display:block;font-size:10.5px;color:#738079;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

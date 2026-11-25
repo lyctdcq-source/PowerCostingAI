@@ -1,0 +1,70 @@
+# ============================================================
+# 字段映射
+# 说明：把「图纸列」翻译成「提资单标准字段」。
+#       语义判断在这里发生，但只在适配时发生一次，随后固化。
+# ============================================================
+
+template: 杆塔明细表
+layout: struct_v1
+
+# method 可选：
+#   extract  —— 图纸原值，直接搬
+#   derive   —— 由已有值加工（拆方向、比四腿、切段号）
+# transform 是可复用的具名转换，代码在 engine/transform.py 中注册
+
+columns:
+
+  - target: 线路段
+    from: tower_no
+    transform: segment            # NA1 -> A 段
+
+  - target: 杆塔号
+    from: tower_no
+
+  - target: 杆塔型号
+    from: tower_type
+
+  - target: 呼称高
+    from: height
+    cast: float
+    note: |
+      注意：图纸这里是「呼称高」（最下层导线挂点至最长腿基础顶面），
+      不是「杆塔全高」。若提资单要求全高，须另读塔结构图，不可直接套用。
+
+  - target: 线路转角
+    from: angle
+    transform: angle              # 左:9°7′16″ -> 9.1211
+
+  - target: 转向前缀
+    from: angle
+    transform: angle_dir          # -> 左 / 右 / 空
+
+  - target: 是否高低腿
+    from: [leg_a, leg_b, leg_c, leg_d]
+    transform: uneven_legs        # 四腿长度是否全等
+
+  - target: 位置桩号
+    from: position
+
+  - target: 定位高差
+    from: delta_h
+    cast: float
+
+  - target: 基础型号A
+    from: found_a
+  - target: 基础型号B
+    from: found_b
+  - target: 基础型号C
+    from: found_c
+  - target: 基础型号D
+    from: found_d
+
+  - target: 基础型号
+    from: [found_a, found_b, found_c, found_d]
+    transform: first_nonempty     # 钢管杆的单值印在「基础C」列，取首个非空
+    note: 角钢塔四腿通常同型号；钢管杆为单基础，值固定在 C 列
+
+  - target: 接腿高度A
+    from: leg_a
+  - target: 预偏值A
+    from: pre_a

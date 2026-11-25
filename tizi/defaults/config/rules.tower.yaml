@@ -1,0 +1,80 @@
+# ============================================================
+# 规则与校验（示例工程配置：220kV 龙泉山输变电工程线路部分）
+# 说明：图纸上没有写、但可以「算」或「查」出来的字段，以及
+#       必须与独立数据源对得上的校验项。
+# 注意：下方 crosschecks 的 expect 基准值（3483.27 t、314.14 t、
+#       214 基）仅属于龙泉山示例工程配置，换工程时请修改本文件。
+# ============================================================
+
+rules:
+
+  # --- 查表：塔型 -> 杆塔类型 ---
+  - target: 杆塔类型
+    type: lookup
+    table: data/tower_kind.csv
+    key:
+      field: 杆塔型号
+      column: type                 # 表内键列名
+      strip_prefix: "V3-"          # 图纸去前缀、库内带前缀，统一后再匹配
+    value: kind
+    on_miss: pending               # 查不到不猜，标为待复核
+    confidence: 0.98
+
+  # --- 区间插值：塔型 + 呼高 -> 全重 ---
+  - target: 全重
+    type: interval
+    table: data/tower_weight.csv
+    key:
+      field: 杆塔型号
+      column: type
+      strip_prefix: "V3-"
+    axis: 呼称高
+    from: [h_min, w_min]           # 区间低端：呼高 h_min 对应重量 w_min
+    to:   [h_max, w_max]
+    clamp: false                   # false = 超出区间不外推，直接标待复核
+    on_out_of_range: pending
+    confidence: 0.95
+    note: 由《全线杆塔型式一览图》OCR 所得的「塔型→区间」线性插值
+
+  # --- 条件补齐：钢管杆没有高低腿概念 ---
+  - target: 是否高低腿
+    type: constant
+    value: 否
+    only_if_empty: true            # 只补空值，不覆盖图纸已有判断
+    where: {杆塔类型: 钢管杆}
+    confidence: 0.90
+    note: 钢管杆为整体结构，不存在接腿组合
+
+  # --- 统一赋值：与线路类型绑定的常量 ---
+  - target: 线路类型
+    type: constant
+    value: 导线
+    confidence: 1.0
+    note: 按线路类型统一赋值，不需逐基填写
+
+# ------------------------------------------------------------
+# 校验：用独立数据源证明结果可信
+# ------------------------------------------------------------
+crosschecks:
+
+  - name: 角钢塔耗钢合计
+    type: sum
+    field: 全重
+    where: {杆塔类型: 角钢塔}
+    expect: 3483.27                # 材料清册角钢塔总量（t）
+    tolerance: 0.02                # 2%
+    unit: t
+
+  - name: 钢管杆耗钢合计
+    type: sum
+    field: 全重
+    where: {杆塔类型: 钢管杆}
+    expect: 314.14
+    tolerance: 0.05                # 5%：本工程实际偏差 7.6%，应触发告警
+    unit: t
+
+  - name: 塔位总数
+    type: count
+    expect: 214
+    tolerance: 0
+    unit: 基

@@ -1,0 +1,37 @@
+# ============================================================
+# 版式模板
+# 说明：描述一页表格的「行怎么认、列在哪」。
+#       这是全流程唯一需要人工标定一次的部分，标定结果即本文件。
+# ============================================================
+
+layout_id: struct_v1
+description: 杆塔及基础配置明细表 · 19 列 · A3 横排
+source: struct
+
+# --- 行识别 ---
+body_top: 150          # 表体起始 y（pt），表头区在此之上
+row_tolerance: 3.5     # 行聚类容差（pt），同一行内文字 y 中心差小于此值
+row_key: tower_no      # 用哪一列判定「这是一条新数据行」
+row_pattern: '^N[A-F]\d+$'   # 形如 NA1 / NB12 / NF3
+
+# --- 列边界（x 中心值落入区间即归属该列）---
+columns:
+  - {key: tower_no,    name: 塔号,   x0: 0,    x1: 75}
+  - {key: tower_type,  name: 塔型,   x0: 75,   x1: 140}
+  - {key: height,      name: 呼高,   x0: 140,  x1: 190}
+  - {key: position,    name: 位置,   x0: 190,  x1: 240}
+  - {key: angle,       name: 转角,   x0: 240,  x1: 305}
+  - {key: delta_h,     name: 高差,   x0: 305,  x1: 365}
+  - {key: leg_a,       name: 接腿A,  x0: 365,  x1: 411}
+  - {key: leg_b,       name: 接腿B,  x0: 411,  x1: 464}
+  - {key: leg_c,       name: 接腿C,  x0: 464,  x1: 517}
+  - {key: leg_d,       name: 接腿D,  x0: 517,  x1: 565}
+  - {key: found_a,     name: 基础A,  x0: 565,  x1: 640}
+  - {key: found_b,     name: 基础B,  x0: 640,  x1: 708}
+  - {key: found_c,     name: 基础C,  x0: 708,  x1: 777}
+  - {key: found_d,     name: 基础D,  x0: 777,  x1: 845}
+  - {key: pre_a,       name: 预偏A,  x0: 845,  x1: 871}
+  - {key: pre_b,       name: 预偏B,  x0: 871,  x1: 896}
+  - {key: pre_c,       name: 预偏C,  x0: 896,  x1: 920}
+  - {key: pre_d,       name: 预偏D,  x0: 920,  x1: 950}
+  - {key: remark,      name: 备注,   x0: 950,  x1: 9999}

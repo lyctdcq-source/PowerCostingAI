@@ -1,0 +1,41 @@
+# ============================================================
+# 数据源目录
+# 说明：声明「哪份图纸提供哪类数据」，以及它的角色。
+#       换工程时只需改这里，代码不动。
+# ============================================================
+
+project: 示例线路工程（已脱敏）
+root: ../脱敏处理数据            # 相对本引擎根目录
+
+sources:
+
+  - id: struct
+    name: 杆塔及基础配置明细表
+    path: 三、结构部分/第一卷 杆塔及基础配置明细表/杆塔及基础配置明细表.pdf
+    role: 主数据源
+    expect_carrier: T2            # 预期载体，用于自检；判错即告警
+
+  - id: material
+    name: 线路设备材料清册
+    path: 一、综合部分/第二册  线路设备材料清册.pdf
+    role: 交叉校验基准
+    expect_carrier: T2
+
+  - id: rho
+    name: 土壤电阻率报告
+    path: 四、地质部分/2026.08.06-220kV龙泉山输变电工程（线路部分）施工图设计阶段土壤电阻率报告.pdf
+    role: 接地选型依据（本示例未使用）
+    expect_carrier: T2
+
+  - id: tower_shape
+    name: 全线杆塔型式一览图
+    path: 一、综合部分/附图/YYSS-B282S-SD-A01-05-全线杆塔型式一览图.pdf
+    role: 全重区间来源（本示例已固化为 data/tower_weight.csv）
+    expect_carrier: T3
+
+  - id: foundation
+    name: 基础跟开表
+    path: 三、结构部分/第二卷 基础施工图PDF/YYSS-B282S-T0201-81-110kV部分基础跟开表（1∕2）.pdf
+    role: 已知不可提取
+    expect_carrier: T3
+    skip_reason: 纯矢量、无文字层，实测 chars=2 / words=0 / draws=17909
