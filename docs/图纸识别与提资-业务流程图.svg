@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1480 1860" width="1480" height="1860" role="img" aria-labelledby="flowTitle flowDesc">
+  <title id="flowTitle">图纸识别与提资业务流程</title>
+  <desc id="flowDesc">每个步骤标明用途。造价员划定范围并发起提资，Harness 先确定性填表再校验，模型只在认版式、扫描件和缺数重访时提议，导出前必须人工放行。</desc>
+  <style>
+    text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif; }
+  </style>
+  <rect width="1480" height="1860" fill="#f6f4ef"/>
+  <text id="flowHeading" x="36" y="40" fill="#1c1915" font-size="26" font-weight="600">图纸识别与提资 · 业务流程</text>
+  <text x="36" y="66" fill="#5c564c" font-size="14">每个步骤写明用途。主链是对话里的「开始提资」。POST /api/tizi/run 不走此图。</text>
+
+  <rect x="28" y="84" width="340" height="34" rx="8" fill="#1f4d3a"/>
+  <text x="198" y="106" fill="#ffffff" font-size="14" font-weight="600" text-anchor="middle">造价员</text>
+  <rect x="380" y="84" width="620" height="34" rx="8" fill="#6b4a1b"/>
+  <text x="690" y="106" fill="#ffffff" font-size="14" font-weight="600" text-anchor="middle">Harness 图节点 · 用途</text>
+  <rect x="1012" y="84" width="440" height="34" rx="8" fill="#1e3a5f"/>
+  <text x="1232" y="106" fill="#ffffff" font-size="14" font-weight="600" text-anchor="middle">这一步交给谁</text>
+
+  <rect x="28" y="118" width="340" height="1688" fill="#e7f2eb"/>
+  <rect x="380" y="118" width="620" height="1688" fill="#f6efe2"/>
+  <rect x="1012" y="118" width="440" height="1688" fill="#e8eef6"/>
+
+  <!-- 1 -->
+  <rect x="44" y="136" width="308" height="86" rx="8" fill="#ffffff" stroke="#1f4d3a"/>
+  <text x="58" y="158" fill="#1f4d3a" font-size="12" font-weight="600">1  选择施工图目录</text>
+  <text x="58" y="180" fill="#1c1915" font-size="13">作用：划定这一次提资读哪些图纸。</text>
+  <text x="58" y="202" fill="#5c564c" font-size="12">目录外的文件不会进入后续节点。</text>
+  <path d="M352 176 H380" stroke="#1c1915" stroke-width="1.4" marker-end="url(#a)"/>
+  <rect x="396" y="136" width="588" height="86" rx="8" fill="#ffffff" stroke="#6b4a1b"/>
+  <text x="412" y="158" fill="#6b4a1b" font-size="12" font-weight="600">绑定工作空间</text>
+  <text x="412" y="180" fill="#1c1915" font-size="13">作用：记住目录，供本次会话反复读取。</text>
+  <text x="412" y="202" fill="#5c564c" font-size="12">此时只绑定，不提取九表。等待「开始提资」。</text>
+  <rect x="1028" y="136" width="408" height="86" rx="8" fill="#ffffff" stroke="#1e3a5f"/>
+  <text x="1044" y="168" fill="#1c1915" font-size="13">Harness：open_folder</text>
+  <text x="1044" y="190" fill="#5c564c" font-size="12">不调用模型。</text>
+
+  <!-- 2 -->
+  <path d="M690 222 V238" stroke="#6b4a1b" stroke-width="1.4" marker-end="url(#ab)"/>
+  <rect x="44" y="238" width="308" height="86" rx="8" fill="#ffffff" stroke="#1f4d3a"/>
+  <text x="58" y="260" fill="#1f4d3a" font-size="12" font-weight="600">2  发送「开始提资」</text>
+  <text x="58" y="282" fill="#1c1915" font-size="13">作用：启动这一轮可暂停的智能体。</text>
+  <text x="58" y="304" fill="#5c564c" font-size="12">中栏能看到节点进度和九表点亮。</text>
+  <path d="M352 278 H380" stroke="#1c1915" stroke-width="1.4" marker-end="url(#a)"/>
+  <rect x="396" y="238" width="588" height="86" rx="8" fill="#ffffff" stroke="#6b4a1b"/>
+  <text x="412" y="260" fill="#6b4a1b" font-size="12" font-weight="600">run_harness_graph</text>
+  <text x="412" y="282" fill="#1c1915" font-size="13">作用：按固定次序跑完取数、校验和审核，而不是自由循环读完全册。</text>
+  <text x="412" y="304" fill="#5c564c" font-size="12">人工审核必经。视觉重访最多 2 轮、24 张裁图。</text>
+  <rect x="1028" y="238" width="408" height="86" rx="8" fill="#ffffff" stroke="#1e3a5f"/>
+  <text x="1044" y="270" fill="#1c1915" font-size="13">Harness：TiziGraphRunner</text>
+  <text x="1044" y="292" fill="#5c564c" font-size="12">图引擎负责次序和断点，模型还没上场。</text>
+
+  <!-- 3 N1 -->
+  <path d="M690 324 V340" stroke="#6b4a1b" stroke-width="1.4" marker-end="url(#ab)"/>
+  <rect x="396" y="340" width="588" height="96" rx="8" fill="#ffffff" stroke="#6b4a1b"/>
+  <text x="412" y="364" fill="#6b4a1b" font-size="12" font-weight="600">3  N1 目录入库</text>
+  <text x="412" y="388" fill="#1c1915" font-size="13">作用：弄清分册、去掉重复件，并准备院标合法枚举。</text>
+  <text x="412" y="410" fill="#5c564c" font-size="12">后面的路由、取数和读图都只引用这份目录，避免重复打开同一 PDF。</text>
+  <rect x="1028" y="340" width="408" height="96" rx="8" fill="#ffffff" stroke="#1e3a5f"/>
+  <text x="1044" y="372" fill="#1c1915" font-size="13">确定性：pdf_probe_catalog</text>
+  <text x="1044" y="394" fill="#5c564c" font-size="12">产出 catalog.json 与规则锚点。</text>
+  <text x="1044" y="414" fill="#5c564c" font-size="12">用途是给后续节点一份稳定的文件清单。</text>
+
+  <!-- 4 N2 -->
+  <path d="M690 436 V452" stroke="#6b4a1b" stroke-width="1.4" marker-end="url(#ab)"/>
+  <rect x="396" y="452" width="588" height="110" rx="8" fill="#ffffff" stroke="#6b4a1b"/>
+  <text x="412" y="476" fill="#6b4a1b" font-size="12" font-weight="600">4  N2 版式路由</text>
+  <text x="412" y="500" fill="#1c1915" font-size="13">作用：决定这套表用本地规则读，还是先让模型认一次表头。</text>
+  <text x="412" y="522" fill="#5c564c" font-size="12">熟悉版式零模型调用。陌生表头若认错一列，会污染后面上百行，所以必须先抽样自检。</text>
+  <text x="412" y="542" fill="#5c564c" font-size="12">T3 详图在这里只建索引，不在这一步读砼量和塔重。</text>
+  <rect x="1028" y="452" width="408" height="110" rx="8" fill="#ffffff" stroke="#7a3418"/>
+  <text x="1044" y="476" fill="#1c1915" font-size="13">本地快车道，或 Model 只学一次</text>
+  <text x="1044" y="498" fill="#5c564c" font-size="12">同义词 ≥ 0.85 或企业指纹命中：不调用模型。</text>
+  <text x="1044" y="518" fill="#5c564c" font-size="12">未命中：模型输出列映射。</text>
+  <text x="1044" y="538" fill="#5c564c" font-size="12">5 行值域自检失败则该版式不放行。</text>
+
+  <!-- 5 N3 -->
+  <path d="M690 562 V578" stroke="#6b4a1b" stroke-width="1.4" marker-end="url(#ab)"/>
+  <rect x="396" y="578" width="588" height="96" rx="8" fill="#ffffff" stroke="#1d4a3c"/>
+  <text x="412" y="602" fill="#1d4a3c" font-size="12" font-weight="600">5  N3 九表首轮提取</text>
+  <text x="412" y="626" fill="#1c1915" font-size="13">作用：用矢量坐标把九张提资表先填上一轮，数字不经过模型。</text>
+  <text x="412" y="648" fill="#5c564c" font-size="12">保证塔号、工程量、材料数量可复现，并写成唯一权威库。</text>
+  <rect x="1028" y="578" width="408" height="96" rx="8" fill="#ffffff" stroke="#1d4a3c"/>
+  <text x="1044" y="610" fill="#1c1915" font-size="13">确定性：step2 → step3 → step4</text>
+  <text x="1044" y="632" fill="#5c564c" font-size="12">网格取数、单位换算、线路段外键、规则补全。</text>
+  <text x="1044" y="652" fill="#5c564c" font-size="12">写入 workbook_v2.json。零 Token。</text>
+
+  <!-- 6 -->
+  <path d="M690 674 V690" stroke="#6b4a1b" stroke-width="1.4" marker-end="url(#ab)"/>
+  <rect x="396" y="690" width="588" height="96" rx="8" fill="#ffffff" stroke="#7a3418"/>
+  <text x="412" y="714" fill="#7a3418" font-size="12" font-weight="600">6  N3-V 扫描件通道</text>
+  <text x="412" y="738" fill="#1c1915" font-size="13">作用：文字层不可用时，改由模型读扫描表，避免整表落空。</text>
+  <text x="412" y="760" fill="#5c564c" font-size="12">没有扫描件就跳过。读出的值一律待人工确认，不能直接当确认数。</text>
+  <rect x="1028" y="690" width="408" height="96" rx="8" fill="#ffffff" stroke="#7a3418"/>
+  <text x="1044" y="722" fill="#1c1915" font-size="13">Model：扫描表视觉读数</text>
+  <text x="1044" y="744" fill="#5c564c" font-size="12">仅 T0。最多 6 张裁图，每份最多 2 页。</text>
+  <text x="1044" y="764" fill="#5c564c" font-size="12">用途是补文字层缺失，不替代 N3 的矢量大表。</text>
+
+  <!-- 7 -->
+  <path d="M690 786 V802" stroke="#6b4a1b" stroke-width="1.4" marker-end="url(#ab)"/>
+  <rect x="396" y="802" width="588" height="110" rx="8" fill="#ffffff" stroke="#6b4a1b"/>
+  <text x="412" y="826" fill="#6b4a1b" font-size="12" font-weight="600">7  N4 约束校验</text>
+  <text x="412" y="850" fill="#1c1915" font-size="13">作用：找出还不能交付的缺数和冲突，并决定下一步是回头看图还是给人审。</text>
+  <text x="412" y="872" fill="#5c564c" font-size="12">CHK-08 缺基础量、CHK-04 缺塔重或全高，才可能重访。</text>
+  <text x="412" y="892" fill="#5c564c" font-size="12">运距、量纲这类冲突不送模型，直接留给造价员裁决。</text>
+  <rect x="1028" y="802" width="408" height="110" rx="8" fill="#ffffff" stroke="#1e3a5f"/>
+  <text x="1044" y="834" fill="#1c1915" font-size="13">确定性：constraint_validator</text>
+  <text x="1044" y="856" fill="#5c564c" font-size="12">计算 CHK-01～08，写出本轮冲突报告。</text>
+  <text x="1044" y="876" fill="#5c564c" font-size="12">目录里没有对应详图分册的缺口会被滤掉，</text>
+  <text x="1044" y="894" fill="#5c564c" font-size="12">避免拿封面或说明书冒充详图去读。</text>
+
+  <!-- decision -->
+  <path d="M690 912 V928" stroke="#6b4a1b" stroke-width="1.4" marker-end="url(#ab)"/>
+  <polygon points="690,928 860,972 690,1016 520,972" fill="#ffffff" stroke="#6b4a1b"/>
+  <text x="690" y="968" fill="#1c1915" font-size="14" font-weight="600" text-anchor="middle">还要不要看图？</text>
+  <text x="690" y="988" fill="#5c564c" font-size="12" text-anchor="middle">未收敛，且模型可用，且未超轮次和张数</text>
+  <text x="690" y="1040" fill="#1d4a3c" font-size="12" text-anchor="middle">是：只为缺口支付一次读图</text>
+
+  <!-- 8 9 -->
+  <path d="M690 1016 V1036 H539 V1052" stroke="#1d4a3c" stroke-width="1.4" fill="none" marker-end="url(#ag)"/>
+  <rect x="396" y="1052" width="286" height="124" rx="8" fill="#ffffff" stroke="#6b4a1b"/>
+  <text x="410" y="1076" fill="#6b4a1b" font-size="12" font-weight="600">8  N5 规划重访</text>
+  <text x="410" y="1100" fill="#1c1915" font-size="13">作用：把缺口收成少量裁图任务。</text>
+  <text x="410" y="1122" fill="#5c564c" font-size="12">同一型号只看一次。必须命中</text>
+  <text x="410" y="1140" fill="#5c564c" font-size="12">基础详图或杆塔型式图。没任务就去审核。</text>
+  <rect x="698" y="1052" width="286" height="124" rx="8" fill="#ffffff" stroke="#7a3418"/>
+  <text x="712" y="1076" fill="#7a3418" font-size="12" font-weight="600">9  N6 局部读图</text>
+  <text x="712" y="1100" fill="#1c1915" font-size="13">作用：只补还空着的砼量、钢筋或塔重。</text>
+  <text x="712" y="1122" fill="#5c564c" font-size="12">看不清、是区间或占位词就不写，</text>
+  <text x="712" y="1140" fill="#5c564c" font-size="12">防止用幻觉覆盖已有数值。然后回到 N4。</text>
+  <path d="M682 1114 H698" stroke="#6b4a1b" stroke-width="1.4" marker-end="url(#ab)"/>
+  <rect x="1028" y="1052" width="408" height="124" rx="8" fill="#ffffff" stroke="#7a3418"/>
+  <text x="1044" y="1076" fill="#1c1915" font-size="13">N5 是确定性规划，不是模型</text>
+  <text x="1044" y="1100" fill="#5c564c" font-size="12">N6 才调用 Model：裁局部图并读原文。</text>
+  <text x="1044" y="1122" fill="#5c564c" font-size="12">证据留在 05_vlm_evidence。截断则外扩</text>
+  <text x="1044" y="1140" fill="#5c564c" font-size="12">20% 再读一次，仍回到 N4 看 CHK 是否收敛。</text>
+  <path d="M860 972 H1006 V1270 H984" stroke="#6b4a1b" stroke-width="1.4" fill="none" marker-end="url(#ab)"/>
+  <text x="868" y="964" fill="#6b4a1b" font-size="12">否，进入审核</text>
+
+  <!-- 10 -->
+  <rect x="396" y="1216" width="588" height="110" rx="8" fill="#ffffff" stroke="#6b4a1b"/>
+  <text x="412" y="1240" fill="#6b4a1b" font-size="12" font-weight="600">10  N7 审核挂起</text>
+  <text x="412" y="1264" fill="#1c1915" font-size="13">作用：导出前停住，把必须人决定的项排成队列。</text>
+  <text x="412" y="1286" fill="#5c564c" font-size="12">P0 是冲突和量纲，不裁决不能出标准表。P1 是模型补的数。P2 是图上确实没有的缺项。</text>
+  <text x="412" y="1306" fill="#5c564c" font-size="12">进程关掉后，凭检查点仍可从这里恢复。</text>
+  <path d="M396 1270 H352" stroke="#1c1915" stroke-width="1.4" marker-end="url(#a)"/>
+  <rect x="44" y="1216" width="308" height="110" rx="8" fill="#ffffff" stroke="#1f4d3a"/>
+  <text x="58" y="1240" fill="#1f4d3a" font-size="12" font-weight="600">11  审核</text>
+  <text x="58" y="1264" fill="#1c1915" font-size="13">作用：由造价员给出可交付的最终值。</text>
+  <text x="58" y="1286" fill="#5c564c" font-size="12">中栏可直接采纳。需要看图时打开右栏，</text>
+  <text x="58" y="1306" fill="#5c564c" font-size="12">对照红框修改。人确认过的格子之后不能被自动覆盖。</text>
+
+  <!-- 12 13 -->
+  <path d="M198 1326 V1342" stroke="#1f4d3a" stroke-width="1.4" marker-end="url(#ag2)"/>
+  <rect x="44" y="1342" width="308" height="86" rx="8" fill="#ffffff" stroke="#1f4d3a"/>
+  <text x="58" y="1366" fill="#1f4d3a" font-size="12" font-weight="600">12  确认并继续输出</text>
+  <text x="58" y="1388" fill="#1c1915" font-size="13">作用：明确放行，系统才生成交付表。</text>
+  <text x="58" y="1410" fill="#5c564c" font-size="12">也可声明跳过未确认项，只出留空草稿。</text>
+  <path d="M352 1384 H380" stroke="#1c1915" stroke-width="1.4" marker-end="url(#a)"/>
+  <rect x="396" y="1342" width="588" height="86" rx="8" fill="#ffffff" stroke="#6b4a1b"/>
+  <text x="412" y="1366" fill="#6b4a1b" font-size="12" font-weight="600">13  N8 注入决策并重算</text>
+  <text x="412" y="1388" fill="#1c1915" font-size="13">作用：把人工改动联动到关联表，并复查是否还剩阻断项。</text>
+  <text x="412" y="1410" fill="#5c564c" font-size="12">基础库改砼量后，四腿汇总和 CHK 一起重算。</text>
+  <rect x="1028" y="1342" width="408" height="86" rx="8" fill="#ffffff" stroke="#1e3a5f"/>
+  <text x="1044" y="1374" fill="#1c1915" font-size="13">确定性：写库 + 基础 DAG + 再校验</text>
+  <text x="1044" y="1396" fill="#5c564c" font-size="12">不调用模型。决策追加进审计流水，不覆盖历史。</text>
+
+  <path d="M690 1428 V1448" stroke="#6b4a1b" stroke-width="1.4" marker-end="url(#ab)"/>
+  <polygon points="690,1448 830,1484 690,1520 550,1484" fill="#ffffff" stroke="#6b4a1b"/>
+  <text x="690" y="1480" fill="#1c1915" font-size="14" font-weight="600" text-anchor="middle">阻断项清了吗？</text>
+  <text x="690" y="1498" fill="#5c564c" font-size="12" text-anchor="middle">未清则退回步骤 11</text>
+  <path d="M550 1484 H36 V1271 H44" stroke="#8a3b2a" stroke-width="1.3" fill="none" marker-end="url(#ar)"/>
+  <text x="44" y="1468" fill="#8a3b2a" font-size="12">退回审核</text>
+
+  <!-- 14 15 -->
+  <path d="M690 1520 V1544" stroke="#1d4a3c" stroke-width="1.4" marker-end="url(#ag)"/>
+  <rect x="396" y="1544" width="588" height="110" rx="8" fill="#ffffff" stroke="#1d4a3c"/>
+  <text x="412" y="1568" fill="#1d4a3c" font-size="12" font-weight="600">14  N9 双轨导出</text>
+  <text x="412" y="1592" fill="#1c1915" font-size="13">作用：交出可以导入计价的标准表，以及可以复核来源的审计表。</text>
+  <text x="412" y="1614" fill="#5c564c" font-size="12">标准版不带未确认的冲突格。审计版保留证据和人工修订。</text>
+  <text x="412" y="1634" fill="#5c564c" font-size="12">只有造价员要求沉淀、且该值已经人工确认，新基础、塔重和版式才写入企业记忆。</text>
+  <rect x="1028" y="1544" width="408" height="110" rx="8" fill="#ffffff" stroke="#1d4a3c"/>
+  <text x="1044" y="1576" fill="#1c1915" font-size="13">确定性：tizi_excel_export</text>
+  <text x="1044" y="1598" fill="#5c564c" font-size="12">tizi_standard.xlsx：给下游计价导入。</text>
+  <text x="1044" y="1618" fill="#5c564c" font-size="12">tizi_audit.xlsx：给内部复核溯源。</text>
+  <text x="1044" y="1638" fill="#5c564c" font-size="12">模型不参与写 Excel。</text>
+  <path d="M396 1596 H352" stroke="#1c1915" stroke-width="1.4" marker-end="url(#a)"/>
+  <rect x="44" y="1556" width="308" height="98" rx="8" fill="#ffffff" stroke="#1f4d3a"/>
+  <text x="58" y="1580" fill="#1f4d3a" font-size="12" font-weight="600">15  取走交付包</text>
+  <text x="58" y="1604" fill="#1c1915" font-size="13">作用：在中栏下载两份 Excel，结束本次提资。</text>
+  <text x="58" y="1626" fill="#5c564c" font-size="12">右栏若开着，导出后收回，避免和对话里的交付卡重复操作。</text>
+
+  <text x="44" y="1696" fill="#3d3832" font-size="13">读图顺序：绿列是人要做的决定，褐列是 Harness 保证的工序，蓝列标明这一步是确定性计算还是模型提议。</text>
+  <text x="44" y="1720" fill="#5c564c" font-size="12">模型只在步骤 4 的陌生表头、步骤 6 的扫描件、步骤 9 的缺数补读出现。步骤 8 的规划本身不是模型。</text>
+  <text x="44" y="1744" fill="#5c564c" font-size="12">龙泉山预演上，此流程会停在步骤 10：CHK 6/8，基础库砼量 12/120；真实读图 1 次，因裁切截断未写入任何值。</text>
+
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#1c1915"/>
+    </marker>
+    <marker id="ab" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#6b4a1b"/>
+    </marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#1d4a3c"/>
+    </marker>
+    <marker id="ag2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#1f4d3a"/>
+    </marker>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#8a3b2a"/>
+    </marker>
+  </defs>
+</svg>
